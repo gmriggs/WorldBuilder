@@ -53,7 +53,7 @@
                             <MenuItem
                                 Command="{Binding UpdateBookmarkCommand}"
                                 CommandParameter="{Binding #BookmarkListBox.SelectedItem}"
-                                Header="Update to Current Position" />
+                                Header="Update to Current Location" />
                             <MenuItem
                                 Command="{Binding RenameBookmarkCommand}"
                                 CommandParameter="{Binding #BookmarkListBox.SelectedItem}"
