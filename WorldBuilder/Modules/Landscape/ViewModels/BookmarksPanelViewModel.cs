@@ -14,8 +14,7 @@ namespace WorldBuilder.Modules.Landscape.ViewModels {
         private readonly LandscapeViewModel _landScapeViewModel;
         private readonly IDialogService _dialogService;
 
-        [ObservableProperty]
-        private ObservableCollection<Bookmark> _bookmarks = new();
+        public ObservableCollection<Bookmark> Bookmarks => _bookmarksManager.Bookmarks;
 
         [ObservableProperty]
         private Bookmark? _selectedBookmark;
@@ -24,17 +23,8 @@ namespace WorldBuilder.Modules.Landscape.ViewModels {
             _bookmarksManager = bookmarksManager ?? throw new ArgumentNullException(nameof(bookmarksManager));
             _landScapeViewModel = landScapeViewModel ?? throw new ArgumentNullException(nameof(landScapeViewModel));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
-            LoadBookmarks();
         }
 
-        private async void LoadBookmarks() {
-            await _bookmarksManager.InitializationTask;
-            Bookmarks.Clear();
-            foreach (var bookmark in _bookmarksManager.Bookmarks) {
-                Bookmarks.Add(bookmark);
-            }
-        }
-        
         [RelayCommand]
         public async Task AddBookmark() {
             var gameScene = _landScapeViewModel.GameScene;
@@ -43,9 +33,6 @@ namespace WorldBuilder.Modules.Landscape.ViewModels {
 
             var bookmarkName = $"{loc.LandblockX:X2}{loc.LandblockY:X2} [{loc.LocalX:0} {loc.LocalY:0} {loc.LocalZ:0}]";
             await _bookmarksManager.AddBookmark(loc.ToLandblockString(), bookmarkName);
-            
-            // Refresh the bookmarks collection
-            LoadBookmarks();    // shouldn't this bind automatically?
             
             // Select the newly added bookmark (it should be the last one)
             if (_bookmarksManager.Bookmarks.Count > 0) {
@@ -71,12 +58,10 @@ namespace WorldBuilder.Modules.Landscape.ViewModels {
             var loc = Position.FromGlobal(gameScene.Camera.Position, _landScapeViewModel.ActiveDocument?.Region, gameScene.CurrentEnvCellId != 0 ? gameScene.CurrentEnvCellId : null);
             loc.Rotation = gameScene.Camera.Rotation;
 
-            // Remove the old bookmark and add a new one with updated position
-            await _bookmarksManager.RemoveBookmark(bookmark);
-            await _bookmarksManager.AddBookmark(loc.ToLandblockString(), bookmark.Name);
+            var updatedBookmark = bookmark.Clone();
+            updatedBookmark.Location = loc.ToLandblockString();
 
-            // Refresh the bookmarks collection
-            LoadBookmarks();
+            await _bookmarksManager.UpdateBookmark(bookmark, updatedBookmark);
         }
 
         [RelayCommand]
@@ -86,12 +71,10 @@ namespace WorldBuilder.Modules.Landscape.ViewModels {
             var newName = await ShowRenameDialog(bookmark.Name);
             if (string.IsNullOrWhiteSpace(newName) || newName == bookmark.Name) return;
 
-            // Remove old bookmark and add new one with updated name
-            await _bookmarksManager.RemoveBookmark(bookmark);
-            await _bookmarksManager.AddBookmark(bookmark.Location, newName);
-            
-            // Refresh the bookmarks collection
-            LoadBookmarks();
+            var updatedBookmark = bookmark.Clone();
+            updatedBookmark.Name = newName;
+
+            await _bookmarksManager.UpdateBookmark(bookmark, updatedBookmark);
         }
 
         private async Task<string?> ShowRenameDialog(string currentName) {
@@ -109,26 +92,35 @@ namespace WorldBuilder.Modules.Landscape.ViewModels {
             if (item == null) return;
             await _bookmarksManager.RemoveBookmark(item);
             if (SelectedBookmark == item) SelectedBookmark = null;
-            LoadBookmarks();
         }
 
         [RelayCommand]
-        public void MoveUp(Bookmark? bookmark) {
-            if (bookmark == null) return;
-            var idx = Bookmarks.IndexOf(bookmark);
-            if (idx > 0) {
-                Bookmarks.Move(idx, idx - 1);
-                // Note: BookmarksManager doesn't support reordering yet, so this only affects the UI
+        public async Task MoveUp(Bookmark? bookmark) {
+            if (bookmark != null) {
+                await _bookmarksManager.MoveBookmarkUp(bookmark);
             }
         }
 
         [RelayCommand]
-        public void MoveDown(Bookmark? bookmark) {
-            if (bookmark == null) return;
-            var idx = Bookmarks.IndexOf(bookmark);
-            if (idx >= 0 && idx < Bookmarks.Count - 1) {
-                Bookmarks.Move(idx, idx + 1);
-                // Note: BookmarksManager doesn't support reordering yet, so this only affects the UI
+        public async Task MoveDown(Bookmark? bookmark) {
+            if (bookmark != null) {
+                await _bookmarksManager.MoveBookmarkDown(bookmark);
+            }
+        }
+
+        /// <summary>
+        /// Copies the current bookmark's location string to the clipboard
+        /// </summary>
+        [RelayCommand]
+        public async Task CopyLocation(Bookmark? bookmark) {
+            if (bookmark?.Location != null) {
+                var app = App.Current;
+                var lifetime = app?.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime;
+                var mainWindow = lifetime?.MainWindow;
+                    
+                if (mainWindow?.Clipboard != null) {
+                    await mainWindow.Clipboard.SetTextAsync(bookmark.Location);
+                }
             }
         }
     }

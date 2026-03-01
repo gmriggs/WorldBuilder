@@ -21,5 +21,15 @@ namespace WorldBuilder.ViewModels {
             get => _location;
             set => SetProperty(ref _location, value);
         }
+
+        /// <summary>
+        /// Creates a shallow copy of this bookmark.
+        /// </summary>
+        public Bookmark Clone() {
+            return new Bookmark {
+                Name = this.Name,
+                Location = this.Location
+            };
+        }
     }
 }

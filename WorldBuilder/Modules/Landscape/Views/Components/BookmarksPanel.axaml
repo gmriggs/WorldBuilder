@@ -60,6 +60,11 @@
                                 Header="Rename" />
                             <Separator />
                             <MenuItem
+                                Command="{Binding CopyLocationCommand}"
+                                CommandParameter="{Binding #BookmarkListBox.SelectedItem}"
+                                Header="Copy Location" />
+                            <Separator />
+                            <MenuItem
                                 Command="{Binding MoveUpCommand}"
                                 CommandParameter="{Binding #BookmarkListBox.SelectedItem}"
                                 Header="Move Up" />

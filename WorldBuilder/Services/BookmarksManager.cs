@@ -54,33 +54,6 @@ namespace WorldBuilder.Services {
         }
 
         /// <summary>
-        /// Adds a new bookmark to the collection and saves it to persistent storage.
-        /// </summary>
-        /// <param name="loc">The AC /loc string format 0xXXYYCCCC [X Y Z] w x y z</param>
-        /// <param name="name">An optional name for the bookmark</param>
-        /// <returns>A task representing the asynchronous operation</returns>
-        public async Task AddBookmark(string loc, string name = "") {
-            var bookmark = new Bookmark {
-                Name = name,
-                Location = loc
-            };
-            Bookmarks.Add(bookmark);
-            await SaveBookmarks();
-        }
-
-        /// <summary>
-        /// Removes a bookmark from the collection and updates persistent storage.
-        /// </summary>
-        /// <param name="bookmark">The bookmark to remove</param>
-        /// <returns>A task representing the asynchronous operation</returns>
-        public async Task RemoveBookmark(Bookmark bookmark) {
-            if (Bookmarks.Remove(bookmark))
-            {
-                await SaveBookmarks();
-            }
-        }
-
-        /// <summary>
         /// Loads bookmarks from persistent storage.
         /// </summary>
         private async Task LoadBookmarks() {
@@ -106,6 +79,68 @@ namespace WorldBuilder.Services {
             }
             finally {
                 _loadTask.TrySetResult(true);
+            }
+        }
+
+        /// <summary>
+        /// Adds a new bookmark to the collection and saves it to persistent storage.
+        /// </summary>
+        /// <param name="loc">The AC /loc string format 0xXXYYCCCC [X Y Z] w x y z</param>
+        /// <param name="name">An optional name for the bookmark</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task AddBookmark(string loc, string name = "") {
+            var bookmark = new Bookmark {
+                Name = name,
+                Location = loc
+            };
+            Bookmarks.Add(bookmark);
+            await SaveBookmarks();
+        }
+
+        /// <summary>
+        /// Updates an existing bookmark with new information and saves the changes to persistent storage.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task UpdateBookmark(Bookmark oldBookmark, Bookmark newBookmark) {
+            var index = Bookmarks.IndexOf(oldBookmark);
+            if (index >= 0) {
+                // Replace the original with the updated clone
+                Bookmarks[index] = newBookmark;
+                await SaveBookmarks();
+            }
+        }
+
+        /// <summary>
+        /// Removes a bookmark from the collection and updates persistent storage.
+        /// </summary>
+        /// <param name="bookmark">The bookmark to remove</param>
+        /// <returns>A task representing the asynchronous operation</returns>
+        public async Task RemoveBookmark(Bookmark bookmark) {
+            if (Bookmarks.Remove(bookmark))
+            {
+                await SaveBookmarks();
+            }
+        }
+
+        /// <summary>
+        /// Moves a bookmark up in the collection and saves to persistent storage.
+        /// </summary>
+        public async Task MoveBookmarkUp(Bookmark bookmark) {
+            var index = Bookmarks.IndexOf(bookmark);
+            if (index > 0) {
+                Bookmarks.Move(index, index - 1);
+                await SaveBookmarks();
+            }
+        }
+
+        /// <summary>
+        /// Moves a bookmark down in the collection and saves to persistent storage.
+        /// </summary>
+        public async Task MoveBookmarkDown(Bookmark bookmark) {
+            var index = Bookmarks.IndexOf(bookmark);
+            if (index >= 0 && index < Bookmarks.Count - 1) {
+                Bookmarks.Move(index, index + 1);
+                await SaveBookmarks();
             }
         }
 
