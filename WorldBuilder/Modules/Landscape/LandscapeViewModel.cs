@@ -99,14 +99,14 @@ public partial class LandscapeViewModel : ViewModelBase, IDisposable, IToolModul
 
     public GameScene GameScene => _gameScene!;
 
-    public LandscapeViewModel(IProject project, IDatReaderWriter dats, IPortalService portalService, IDocumentManager documentManager, ILogger<LandscapeViewModel> log, IDialogService dialogService, BookmarksManager bookmarksManager, WorldBuilderSettings? settings = null) {
+    public LandscapeViewModel(IProject project, IDatReaderWriter dats, IPortalService portalService, IDocumentManager documentManager, BookmarksManager bookmarksManager, ILogger<LandscapeViewModel> log, IDialogService dialogService) {
         _project = project;
         _dats = dats;
         _portalService = portalService;
         _documentManager = documentManager;
         _log = log;
         _dialogService = dialogService;
-        _settings = settings ?? WorldBuilder.App.Services?.GetService<WorldBuilderSettings>();
+        _settings = WorldBuilder.App.Services?.GetService<WorldBuilderSettings>();
         _bookmarksManager = bookmarksManager;
 
         if (_settings != null) {

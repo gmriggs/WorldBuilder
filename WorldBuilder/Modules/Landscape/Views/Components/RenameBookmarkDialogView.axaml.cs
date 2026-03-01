@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using WorldBuilder.Modules.Landscape.ViewModels;
 
-namespace WorldBuilder.Modules.Landscape.Views {
+namespace WorldBuilder.Modules.Landscape.Views.Components {
     public partial class RenameBookmarkDialogView : Window {
         public RenameBookmarkDialogView() {
             InitializeComponent();

@@ -27,7 +27,7 @@ namespace WorldBuilder.Tests.Modules.Landscape {
             
             projectMock.Setup(p => p.IsReadOnly).Returns(false);
             
-            var vm = new LandscapeViewModel(projectMock.Object, datsMock.Object, portalServiceMock.Object, docManagerMock.Object, loggerMock.Object, dialogServiceMock.Object, bookmarksManagerMock.Object);
+            var vm = new LandscapeViewModel(projectMock.Object, datsMock.Object, portalServiceMock.Object, docManagerMock.Object, bookmarksManagerMock.Object, loggerMock.Object, dialogServiceMock.Object);
             
             Assert.IsType<BrushTool>(vm.ActiveTool);
         }
@@ -44,7 +44,7 @@ namespace WorldBuilder.Tests.Modules.Landscape {
             
             projectMock.Setup(p => p.IsReadOnly).Returns(false);
             
-            var vm = new LandscapeViewModel(projectMock.Object, datsMock.Object, portalServiceMock.Object, docManagerMock.Object, loggerMock.Object, dialogServiceMock.Object, bookmarksManagerMock.Object);
+            var vm = new LandscapeViewModel(projectMock.Object, datsMock.Object, portalServiceMock.Object, docManagerMock.Object, bookmarksManagerMock.Object, loggerMock.Object, dialogServiceMock.Object);
             
             Assert.IsType<BrushTool>(vm.ActiveTool);
             Assert.False(vm.IsDebugShapesEnabled);
@@ -62,7 +62,7 @@ namespace WorldBuilder.Tests.Modules.Landscape {
             
             projectMock.Setup(p => p.IsReadOnly).Returns(false);
             
-            var vm = new LandscapeViewModel(projectMock.Object, datsMock.Object, portalServiceMock.Object, docManagerMock.Object, loggerMock.Object, dialogServiceMock.Object, bookmarksManagerMock.Object);
+            var vm = new LandscapeViewModel(projectMock.Object, datsMock.Object, portalServiceMock.Object, docManagerMock.Object, bookmarksManagerMock.Object, loggerMock.Object, dialogServiceMock.Object);
             
             var inspectorTool = vm.Tools.OfType<InspectorTool>().First();
             vm.ActiveTool = inspectorTool;
@@ -82,7 +82,7 @@ namespace WorldBuilder.Tests.Modules.Landscape {
             
             projectMock.Setup(p => p.IsReadOnly).Returns(false);
             
-            var vm = new LandscapeViewModel(projectMock.Object, datsMock.Object, portalServiceMock.Object, docManagerMock.Object, loggerMock.Object, dialogServiceMock.Object, bookmarksManagerMock.Object);
+            var vm = new LandscapeViewModel(projectMock.Object, datsMock.Object, portalServiceMock.Object, docManagerMock.Object, bookmarksManagerMock.Object, loggerMock.Object, dialogServiceMock.Object);
             
             var brushTool = vm.Tools.OfType<BrushTool>().First();
             var inspectorTool = vm.Tools.OfType<InspectorTool>().First();

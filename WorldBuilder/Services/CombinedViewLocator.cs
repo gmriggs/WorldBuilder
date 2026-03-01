@@ -78,6 +78,21 @@ public class CombinedViewLocator : ViewLocatorBase, IDataTemplate {
             }
         }
 
-        return viewModelName.Replace(".ViewModels.", ".Views.").Replace("ViewModel", "View");
+        // First try the standard Views namespace
+        var standardViewName = viewModelName.Replace(".ViewModels.", ".Views.").Replace("ViewModel", "View");
+        var standardViewType = viewModelType.Assembly.GetType(standardViewName);
+        if (standardViewType != null) {
+            return standardViewName;
+        }
+
+        // If not found, try the Views.Components namespace
+        var componentsViewName = viewModelName.Replace(".ViewModels.", ".Views.Components.").Replace("ViewModel", "View");
+        var componentsViewType = viewModelType.Assembly.GetType(componentsViewName);
+        if (componentsViewType != null) {
+            return componentsViewName;
+        }
+
+        // Return the standard name as fallback
+        return standardViewName;
     }
 }
