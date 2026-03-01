@@ -21,14 +21,9 @@
                     x:Name="BookmarkListBox"
                     ItemsSource="{Binding Bookmarks}"
                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                    SelectedItem="{Binding SelectedBookmark}">
-                    <i:Interaction.Behaviors>
-                        <ia:EventTriggerBehavior EventName="DoubleTapped">
-                            <ia:InvokeCommandAction
-                                Command="{Binding GoToBookmarkCommand}"
-                                CommandParameter="{Binding #BookmarkListBox.SelectedItem}" />
-                        </ia:EventTriggerBehavior>
-                    </i:Interaction.Behaviors>
+                    SelectedItem="{Binding SelectedBookmark}"
+                    KeyDown="BookmarkListBox_KeyDown"
+                    DoubleTapped="BookmarkListBox_DoubleTapped">
                     <ListBox.Styles>
                         <Style Selector="ListBoxItem">
                             <Setter Property="Padding" Value="8,4" />
@@ -92,7 +87,8 @@
                 Spacing="5">
                 <Button
                     Command="{Binding AddBookmarkCommand}"
-                    Content="📍"
+                    Content="+"
+                    FontSize="18"
                     ToolTip.Tip="Bookmark Current Position (Ctrl+B)" />
                 <Button
                     Command="{Binding GoToBookmarkCommand}"
@@ -103,7 +99,7 @@
                 <Button
                     Command="{Binding DeleteBookmarkCommand}"
                     CommandParameter="{Binding SelectedBookmark}"
-                    Content="🗑️"
+                    Content="x"
                     IsEnabled="{Binding SelectedBookmark, Converter={x:Static ObjectConverters.IsNotNull}}"
                     ToolTip.Tip="Delete Selected Bookmark" />
             </StackPanel>
