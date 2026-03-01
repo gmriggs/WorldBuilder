@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using WorldBuilder.Lib.Platform;
 using WorldBuilder.Modules.Landscape.ViewModels;
 
 namespace WorldBuilder.Modules.Landscape.Views.Components;
@@ -7,6 +8,12 @@ namespace WorldBuilder.Modules.Landscape.Views.Components;
 public partial class BookmarksPanel : UserControl {
     public BookmarksPanel() {
         InitializeComponent();
+        
+        // Apply platform-specific padding for arrow alignment
+        if (Platform.IsLinux)
+            GoToButton.Padding = new Avalonia.Thickness(0, 4, 0, 0);
+        else if (Platform.IsMacOS)
+            GoToButton.Padding = new Avalonia.Thickness(0, 1, 0, 0);
     }
 
     private void BookmarkListBox_KeyDown(object? sender, KeyEventArgs e) {
