@@ -1,13 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Collections.ObjectModel;
-using System.Numerics;
+﻿using System.Collections.ObjectModel;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using WorldBuilder.Lib;
 using WorldBuilder.ViewModels;
 
 namespace WorldBuilder.Services {
     public class BookmarksManager {
-        private readonly ILogger<RecentProjectsManager> _log;
+        private readonly ILogger<BookmarksManager> _log;
         private readonly WorldBuilderSettings _settings;
         private readonly TaskCompletionSource<bool> _loadTask = new();
 
@@ -31,7 +30,7 @@ namespace WorldBuilder.Services {
         /// </summary>
         public BookmarksManager() {
             _settings = new WorldBuilderSettings();
-            _log = Microsoft.Extensions.Logging.Abstractions.NullLogger<RecentProjectsManager>.Instance;
+            _log = Microsoft.Extensions.Logging.Abstractions.NullLogger<BookmarksManager>.Instance;
             Bookmarks = new ObservableCollection<Bookmark>();
             // Add sample data for design-time
             Bookmarks.Add(new Bookmark { Name = "Yaraq" });
@@ -45,7 +44,7 @@ namespace WorldBuilder.Services {
         /// </summary>
         /// <param name="settings">The application settings</param>
         /// <param name="log">The logger instance</param>
-        public BookmarksManager(WorldBuilderSettings settings, ILogger<RecentProjectsManager> log) {
+        public BookmarksManager(WorldBuilderSettings settings, ILogger<BookmarksManager> log) {
             _settings = settings;
             _log = log;
             Bookmarks = new ObservableCollection<Bookmark>();
@@ -57,16 +56,13 @@ namespace WorldBuilder.Services {
         /// <summary>
         /// Adds a new bookmark to the collection and saves it to persistent storage.
         /// </summary>
-        /// <param name="position">The camera's 3D position in global worldpsace</param>
-        /// <param name="yaw">The camera's yaw (left/right rotation) in degrees</param>
-        /// <param name="pitch">The camera's pitch (up/down rotation) in degrees</param>
+        /// <param name="loc">The AC /loc string format 0xXXYYCCCC [X Y Z] w x y z</param>
         /// <param name="name">An optional name for the bookmark</param>
         /// <returns>A task representing the asynchronous operation</returns>
-        public async Task AddBookmark(Vector3 position, float yaw, float pitch, string name = "") {
+        public async Task AddBookmark(string loc, string name = "") {
             var bookmark = new Bookmark {
                 Name = name,
-                Position = position,
-                Rotation = new Vector2(yaw, pitch)
+                Location = loc
             };
             Bookmarks.Add(bookmark);
             await SaveBookmarks();

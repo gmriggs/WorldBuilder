@@ -3,11 +3,17 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:conv="clr-namespace:WorldBuilder.Lib.Converters"
+    xmlns:converters="clr-namespace:WorldBuilder.Converters"
     xmlns:i="using:Avalonia.Xaml.Interactivity"
     xmlns:ia="using:Avalonia.Xaml.Interactions.Core"
     xmlns:landscape="clr-namespace:WorldBuilder.Modules.Landscape.ViewModels"
+    xmlns:viewmodels="clr-namespace:WorldBuilder.ViewModels"
     x:CompileBindings="False"
     x:DataType="landscape:BookmarksPanelViewModel">
+
+    <UserControl.Resources>
+        <converters:PositionToCoordConverter x:Key="PositionToCoordConverter" />
+    </UserControl.Resources>
 
     <DockPanel LastChildFill="True">
         <StackPanel Orientation="Vertical">
@@ -30,14 +36,14 @@
                         </Style>
                     </ListBox.Styles>
                     <ListBox.ItemTemplate>
-                        <DataTemplate x:DataType="landscape:CameraBookmarkItem">
+                        <DataTemplate x:DataType="viewmodels:Bookmark">
                             <DockPanel>
                                 <TextBlock
                                     DockPanel.Dock="Right"
                                     FontSize="11"
                                     Foreground="{DynamicResource SystemBaseMediumColor}"
                                     Opacity="0.6"
-                                    Text="{Binding Detail}"
+                                    Text="{Binding Position, Converter={StaticResource PositionToCoordConverter}}"
                                     VerticalAlignment="Center" />
                                 <StackPanel Orientation="Horizontal">
                                     <!-- Padding fixes odd rendering bug with Spacing -->

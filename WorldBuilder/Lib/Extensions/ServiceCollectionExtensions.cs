@@ -33,6 +33,7 @@ namespace WorldBuilder.Lib.Extensions {
             collection.AddSingleton<WorldBuilderSettings>();
             collection.AddSingleton<ThemeService>();
             collection.AddSingleton<RecentProjectsManager>();
+            collection.AddSingleton<BookmarksManager>();
             collection.AddSingleton<ProjectManager>();
             collection.AddSingleton<SplashPageFactory>();
             collection.AddSingleton<IUpdateService, VelopackUpdateService>();
@@ -91,6 +92,7 @@ namespace WorldBuilder.Lib.Extensions {
 
             collection.AddSingleton(rootProvider.GetRequiredService<WorldBuilderSettings>());
             collection.AddSingleton(rootProvider.GetRequiredService<RecentProjectsManager>());
+            collection.AddSingleton(rootProvider.GetRequiredService<BookmarksManager>());
             collection.AddSingleton(rootProvider.GetRequiredService<ThemeService>());
             collection.AddSingleton(rootProvider.GetRequiredService<ProjectManager>());
             collection.AddSingleton(rootProvider.GetRequiredService<IDialogService>());

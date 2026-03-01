@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using System.Numerics;
 
 namespace WorldBuilder.ViewModels {
     public partial class Bookmark : ObservableObject {
@@ -13,24 +12,14 @@ namespace WorldBuilder.ViewModels {
             set => SetProperty(ref _name, value);
         }
 
-        private Vector3 _position;
+        private string _location = string.Empty;
 
         /// <summary>
-        /// The 3D position in global worldspace
+        /// The AC /loc string format 0xXXYYCCCC [X Y Z] w x y z
         /// </summary>
-        public Vector3 Position {
-            get => _position;
-            set => SetProperty(ref _position, value);
-        }
-
-        private Vector2 _rotation;
-        
-        /// <summary>
-        /// The yaw/pitch rotation
-        /// </summary>
-        public Vector2 Rotation {
-            get => _rotation;
-            set => SetProperty(ref _rotation, value);
+        public string Location {
+            get => _location;
+            set => SetProperty(ref _location, value);
         }
     }
 }
