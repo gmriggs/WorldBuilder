@@ -1,7 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HanumanInstitute.MvvmDialogs;
-using System.Collections.ObjectModel;
+
 using WorldBuilder.Services;
 using WorldBuilder.Shared.Models;
 using WorldBuilder.ViewModels;
@@ -37,8 +39,9 @@ namespace WorldBuilder.Modules.Landscape.ViewModels {
         public async Task AddBookmark() {
             var gameScene = _landScapeViewModel.GameScene;
             var loc = Position.FromGlobal(gameScene.Camera.Position, _landScapeViewModel.ActiveDocument?.Region, gameScene.CurrentEnvCellId != 0 ? gameScene.CurrentEnvCellId : null);
-            var bookmarkName = $"{loc.CellX:X2}{loc.CellY:X2} [{loc.LocalX:0} {loc.LocalY:0} {loc.LocalZ:0}]";
+            loc.Rotation = gameScene.Camera.Rotation;
 
+            var bookmarkName = $"{loc.LandblockX:X2}{loc.LandblockY:X2} [{loc.LocalX:0} {loc.LocalY:0} {loc.LocalZ:0}]";
             await _bookmarksManager.AddBookmark(loc.ToLandblockString(), bookmarkName);
             
             // Refresh the bookmarks collection
@@ -66,6 +69,7 @@ namespace WorldBuilder.Modules.Landscape.ViewModels {
 
             var gameScene = _landScapeViewModel.GameScene;
             var loc = Position.FromGlobal(gameScene.Camera.Position, _landScapeViewModel.ActiveDocument?.Region, gameScene.CurrentEnvCellId != 0 ? gameScene.CurrentEnvCellId : null);
+            loc.Rotation = gameScene.Camera.Rotation;
 
             // Remove the old bookmark and add a new one with updated position
             await _bookmarksManager.RemoveBookmark(bookmark);
