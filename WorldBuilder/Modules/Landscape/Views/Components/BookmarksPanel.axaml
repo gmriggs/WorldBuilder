@@ -39,8 +39,9 @@
                                     Opacity="0.6"
                                     Text="{Binding Detail}"
                                     VerticalAlignment="Center" />
-                                <StackPanel Orientation="Horizontal" Spacing="5">
-                                    <TextBlock Text="📍" />
+                                <StackPanel Orientation="Horizontal">
+                                    <!-- Padding fixes odd rendering bug with Spacing -->
+                                    <TextBlock Text="📍" Padding="0,0,7,0" />
                                     <TextBlock Text="{Binding Name}" />
                                 </StackPanel>
                             </DockPanel>
