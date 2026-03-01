@@ -448,9 +448,7 @@ public partial class LandscapeViewModel : ViewModelBase, IDisposable, IToolModul
             _gameScene.SetInspectorTool(ActiveTool as InspectorTool);
             _gameScene.SetToolContext(_toolContext);
 
-            if (ActiveDocument != null) {
-                RestoreCameraState();
-            }
+            RestoreCameraState();
         }
     }
 
@@ -472,20 +470,13 @@ public partial class LandscapeViewModel : ViewModelBase, IDisposable, IToolModul
                     _gameScene.CurrentCamera.Rotation = pos.Rotation.Value;
                 }
             }
-            else {
-                _gameScene.Camera3D.Position = projectSettings.LandscapeCameraPosition;
-                _gameScene.Camera2D.Position = projectSettings.LandscapeCameraPosition;
-            }
 
-            _gameScene.Camera3D.Yaw = projectSettings.LandscapeCameraYaw;
-            _gameScene.Camera3D.Pitch = projectSettings.LandscapeCameraPitch;
             _gameScene.Camera3D.MoveSpeed = projectSettings.LandscapeCameraMovementSpeed;
             _gameScene.Camera3D.FieldOfView = projectSettings.LandscapeCameraFieldOfView;
-
-            _gameScene.Camera2D.Zoom = projectSettings.LandscapeCameraZoom;
             _gameScene.Camera2D.FieldOfView = projectSettings.LandscapeCameraFieldOfView;
 
             _gameScene.SetCameraMode(projectSettings.LandscapeCameraIs3D);
+            _gameScene.SyncZoomFromZ();
         }
         finally {
             _isRestoringCamera = false;
@@ -497,21 +488,14 @@ public partial class LandscapeViewModel : ViewModelBase, IDisposable, IToolModul
 
         var projectSettings = _settings.Project;
         var pos = _gameScene.Camera.Position;
-        projectSettings.LandscapeCameraPosition = pos;
 
         // Save location string
-        var loc = Position.FromGlobal(pos, ActiveDocument?.Region);
-        if (_gameScene.CurrentEnvCellId != 0) {
-            loc.CellId = (ushort)(_gameScene.CurrentEnvCellId & 0xFFFF);
-            loc.LandblockId = (ushort)(_gameScene.CurrentEnvCellId >> 16);
-        }
+        var loc = Position.FromGlobal(pos, ActiveDocument?.Region, _gameScene.CurrentEnvCellId != 0 ? _gameScene.CurrentEnvCellId : null);
+
         loc.Rotation = _gameScene.Camera.Rotation;
         projectSettings.LandscapeCameraLocationString = loc.ToLandblockString();
 
         projectSettings.LandscapeCameraIs3D = _gameScene.Is3DMode;
-        projectSettings.LandscapeCameraYaw = _gameScene.Camera3D.Yaw;
-        projectSettings.LandscapeCameraPitch = _gameScene.Camera3D.Pitch;
-        projectSettings.LandscapeCameraZoom = _gameScene.Camera2D.Zoom;
         projectSettings.LandscapeCameraMovementSpeed = _gameScene.Camera3D.MoveSpeed;
         projectSettings.LandscapeCameraFieldOfView = (int)_gameScene.Camera3D.FieldOfView;
     }

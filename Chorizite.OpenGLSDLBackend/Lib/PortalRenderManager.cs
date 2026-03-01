@@ -195,9 +195,9 @@ namespace Chorizite.OpenGLSDLBackend.Lib {
             }
         }
 
-        public bool Raycast(Vector3 rayOrigin, Vector3 rayDirection, out SceneRaycastHit hit, float maxDistance = float.MaxValue) {
+        public bool Raycast(Vector3 rayOrigin, Vector3 rayDirection, out SceneRaycastHit hit, float maxDistance = float.MaxValue, bool ignoreVisibility = false) {
             hit = SceneRaycastHit.NoHit;
-            if (!ShowPortals || _landscapeDoc.Region == null) return false;
+            if ((!ShowPortals && !ignoreVisibility) || _landscapeDoc.Region == null) return false;
 
             float closestDistance = float.MaxValue;
             PortalData? closestPortal = null;
@@ -261,10 +261,10 @@ namespace Chorizite.OpenGLSDLBackend.Lib {
                 if (!lb.Ready || lb.BuildingPortals.Count == 0 || !IsWithinRenderDistance(lb)) continue;
 
                 // Use the precise bounding box of the landblock's portals for frustum testing
-                if (_frustum.TestBox(new Chorizite.Core.Lib.BoundingBox(lb.BoundingBox.Min, lb.BoundingBox.Max)) == FrustumTestResult.Outside) continue;
+                if (_frustum.TestBox(new Chorizite.Core.Lib.BoundingBox(lb.BoundingBox.Min, lb.BoundingBox.Max), ignoreNearPlane: true) == FrustumTestResult.Outside) continue;
 
                 foreach (var building in lb.BuildingPortals) {
-                    if (_frustum.TestBox(new Chorizite.Core.Lib.BoundingBox(building.BoundingBox.Min, building.BoundingBox.Max)) == FrustumTestResult.Outside) continue;
+                    if (_frustum.TestBox(new Chorizite.Core.Lib.BoundingBox(building.BoundingBox.Min, building.BoundingBox.Max), ignoreNearPlane: true) == FrustumTestResult.Outside) continue;
                     results.Add((key, building));
                 }
             }
@@ -296,10 +296,10 @@ namespace Chorizite.OpenGLSDLBackend.Lib {
                 if (!lb.Ready || lb.BuildingPortals.Count == 0 || !IsWithinRenderDistance(lb)) continue;
 
                 // Use the precise bounding box of the landblock's portals for frustum testing
-                if (_frustum.TestBox(new Chorizite.Core.Lib.BoundingBox(lb.BoundingBox.Min, lb.BoundingBox.Max)) == FrustumTestResult.Outside) continue;
+                if (_frustum.TestBox(new Chorizite.Core.Lib.BoundingBox(lb.BoundingBox.Min, lb.BoundingBox.Max), ignoreNearPlane: true) == FrustumTestResult.Outside) continue;
 
                 foreach (var building in lb.BuildingPortals) {
-                    if (_frustum.TestBox(new Chorizite.Core.Lib.BoundingBox(building.BoundingBox.Min, building.BoundingBox.Max)) == FrustumTestResult.Outside) continue;
+                    if (_frustum.TestBox(new Chorizite.Core.Lib.BoundingBox(building.BoundingBox.Min, building.BoundingBox.Max), ignoreNearPlane: true) == FrustumTestResult.Outside) continue;
                     yield return (key, building);
                 }
             }
@@ -337,6 +337,8 @@ namespace Chorizite.OpenGLSDLBackend.Lib {
         internal unsafe void RenderBuildingStencilMask(BuildingPortalGPU building, Matrix4x4 viewProjection, bool writeFarDepth = false) {
             if (_stencilShader == null || building.VAO == 0) return;
 
+            _gl.Enable(EnableCap.DepthClamp);
+
             _stencilShader.Bind();
             _stencilShader.SetUniform("uViewProjection", viewProjection);
             _stencilShader.SetUniform("uWriteFarDepth", writeFarDepth ? 1 : 0);
@@ -344,6 +346,8 @@ namespace Chorizite.OpenGLSDLBackend.Lib {
             _gl.BindVertexArray(building.VAO);
             _gl.DrawArrays(PrimitiveType.Triangles, 0, (uint)building.VertexCount);
             _gl.BindVertexArray(0);
+
+            _gl.Disable(EnableCap.DepthClamp);
         }
 
         #endregion
@@ -357,7 +361,7 @@ namespace Chorizite.OpenGLSDLBackend.Lib {
                 var lbOrigin = new Vector3(
                     lbGlobalX * 192f + _landscapeDoc.Region!.MapOffset.X,
                     lbGlobalY * 192f + _landscapeDoc.Region!.MapOffset.Y,
-                    RenderConstants.ObjectZOffset
+                    0f
                 );
 
                 // Generate debug portal data (existing functionality)

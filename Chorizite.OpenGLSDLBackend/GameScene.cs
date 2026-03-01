@@ -439,6 +439,13 @@ public class GameScene : IDisposable {
     }
 
 
+    public void SyncZoomFromZ() {
+        var fovRad = MathF.PI * _camera3D.FieldOfView / 180.0f;
+        var tanHalfFov = MathF.Tan(fovRad / 2.0f);
+        float h = Math.Max(0.01f, _currentCamera.Position.Z);
+        _camera2D.Zoom = 10.0f / (h * tanHalfFov);
+    }
+
     /// <summary>
     /// Toggles between 2D and 3D camera modes.
     /// </summary>
@@ -580,17 +587,42 @@ public class GameScene : IDisposable {
             }
 
             // Update current cell ID based on portal transition rules
-            if (_currentEnvCellId == 0) {
-                var newCell = GetEnvCellAt(newPos, _state.EnableCameraCollision);
-                if (newCell != 0xFFFFFFFF) {
-                    _currentEnvCellId = newCell;
+            if (_state.EnableCameraCollision) {
+                Vector3 moveDir = newPos - oldPos;
+                float moveDist = moveDir.Length();
+
+                if (moveDist > 0.0001f) {
+                    // Check if we passed through a portal this frame
+                    if (RaycastPortals(oldPos, moveDir / moveDist, out var portalHit, moveDist)) {
+                        if (_currentEnvCellId == 0) {
+                            // Enter the building
+                            _currentEnvCellId = portalHit.ObjectId;
+                        }
+                        else {
+                            // When transitioning, re-evaluate broad position.
+                            // If we are still in the same cell's AABB AND we hit its portal again,
+                            // it means we are exiting to the outside world.
+                            var nextCell = GetEnvCellAt(newPos, false);
+                            if (nextCell == _currentEnvCellId && portalHit.ObjectId == _currentEnvCellId) {
+                                _currentEnvCellId = 0;
+                            }
+                            else {
+                                // Otherwise, we transitioned to another connected cell
+                                _currentEnvCellId = nextCell;
+                            }
+                        }
+                    }
+                    else if (_currentEnvCellId != 0) {
+                        // Fallback: If we fell completely out of the cell AABB without hitting a portal
+                        // (e.g. wall clipping/teleporting)
+                        if (GetEnvCellAt(newPos, false) == 0) {
+                            _currentEnvCellId = 0;
+                        }
+                    }
                 }
             }
             else {
-                var newCell = GetEnvCellAt(newPos, false);
-                if (newCell != 0xFFFFFFFF) {
-                    _currentEnvCellId = newCell;
-                }
+                _currentEnvCellId = GetEnvCellAt(newPos, false);
             }
 
             // Always enforce terrain height if outside and camera collision is enabled
@@ -756,10 +788,10 @@ public class GameScene : IDisposable {
         return false;
     }
 
-    public bool RaycastPortals(Vector3 origin, Vector3 direction, out SceneRaycastHit hit, float maxDistance = float.MaxValue) {
+    public bool RaycastPortals(Vector3 origin, Vector3 direction, out SceneRaycastHit hit, float maxDistance = float.MaxValue, bool ignoreVisibility = true) {
         hit = SceneRaycastHit.NoHit;
 
-        if (_portalManager != null && _portalManager.Raycast(origin, direction, out hit, maxDistance)) {
+        if (_portalManager != null && _portalManager.Raycast(origin, direction, out hit, maxDistance, ignoreVisibility)) {
             return true;
         }
         return false;
@@ -795,7 +827,7 @@ public class GameScene : IDisposable {
             _gl.ColorMask(false, false, false, false);
             _gl.DepthMask(false);
             _gl.Enable(EnableCap.DepthTest);
-            _gl.DepthFunc(DepthFunction.Less);
+            _gl.DepthFunc(DepthFunction.Always);
 
             foreach (var (lbKey, building) in _buildingsWithCurrentCell) {
                 _portalManager?.RenderBuildingStencilMask(building, snapshotVP, false);
@@ -939,6 +971,7 @@ public class GameScene : IDisposable {
         if (didInsideStencil) {
             _gl.Disable(EnableCap.StencilTest);
             _gl.StencilMask(0xFF);
+            _gl.ColorMask(true, true, true, false);
         }
     }
 
@@ -1056,6 +1089,7 @@ public class GameScene : IDisposable {
         if (didStencil) {
             _gl.Disable(EnableCap.StencilTest);
             _gl.StencilMask(0xFF);
+            _gl.ColorMask(true, true, true, false);
         }
     }
 
