@@ -14,6 +14,10 @@ internal class MockViewModelViewModel { }
 internal class MockWindowViewModelViewModel { }
 internal class MockWindowView { }
 
+// Mock classes for testing Components namespace
+internal class MockComponentsViewModel { }
+internal class MockComponentsView { }
+
 // Test wrapper to expose the protected GetViewName method
 public class TestableCombinedViewLocator : CombinedViewLocator {
     public TestableCombinedViewLocator(bool preferWindows = false) : base(preferWindows) { }
@@ -151,5 +155,29 @@ public class CombinedViewLocatorTests {
 
         // Assert
         Assert.Equal("WorldBuilder.Modules.DatBrowser.Views.DatBrowserWindow", result);
+    }
+
+    [Fact]
+    public void GetViewName_ViewModelInStandardNamespace_StandardViewExists_ReturnsStandardViewName() {
+        // Arrange
+        var mockViewModel = new MockStandardViewModel();
+
+        // Act
+        var result = _locator.GetViewNamePublic(mockViewModel);
+
+        // Assert - Should return standard Views namespace since MockStandardView exists
+        Assert.Equal("WorldBuilder.Tests.Views.MockStandardView", result);
+    }
+
+    [Fact]
+    public void GetViewName_ViewModelInStandardNamespace_StandardViewNotExists_ReturnsComponentsViewName() {
+        // Arrange
+        var mockViewModel = new MockComponentsViewModel();
+
+        // Act
+        var result = _locator.GetViewNamePublic(mockViewModel);
+
+        // Assert - Should return standard view name as fallback since neither standard nor Components view exists
+        Assert.Equal("WorldBuilder.Tests.Views.MockComponentsView", result);
     }
 }

@@ -38,6 +38,7 @@ namespace WorldBuilder.Lib.Extensions {
             collection.AddSingleton<IUpdateService, VelopackUpdateService>();
             collection.AddSingleton<SharedOpenGLContextManager>();
             collection.AddSingleton<PerformanceService>();
+            collection.AddSingleton<BookmarksManager>();
 
             // Register dialog service
             collection.AddSingleton<IDialogService>(provider => new DialogService(
@@ -95,6 +96,7 @@ namespace WorldBuilder.Lib.Extensions {
             collection.AddSingleton(rootProvider.GetRequiredService<ProjectManager>());
             collection.AddSingleton(rootProvider.GetRequiredService<IDialogService>());
             collection.AddSingleton(rootProvider.GetRequiredService<PerformanceService>());
+            collection.AddSingleton(rootProvider.GetRequiredService<BookmarksManager>());
 
             collection.AddSingleton((Project)project);
             collection.AddSingleton<IProject>(project);

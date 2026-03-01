@@ -6,8 +6,12 @@
     xmlns:i="using:Avalonia.Xaml.Interactivity"
     xmlns:ia="using:Avalonia.Xaml.Interactions.Core"
     xmlns:landscape="clr-namespace:WorldBuilder.Modules.Landscape.ViewModels"
+    xmlns:viewmodels="clr-namespace:WorldBuilder.ViewModels"
     x:CompileBindings="False"
     x:DataType="landscape:BookmarksPanelViewModel">
+
+    <UserControl.Resources>
+    </UserControl.Resources>
 
     <DockPanel LastChildFill="True">
         <StackPanel Orientation="Vertical">
@@ -21,36 +25,25 @@
                     x:Name="BookmarkListBox"
                     ItemsSource="{Binding Bookmarks}"
                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                    SelectedItem="{Binding SelectedBookmark}">
-                    <i:Interaction.Behaviors>
-                        <ia:EventTriggerBehavior EventName="DoubleTapped">
-                            <ia:InvokeCommandAction
-                                Command="{Binding GoToBookmarkCommand}"
-                                CommandParameter="{Binding #BookmarkListBox.SelectedItem}" />
-                        </ia:EventTriggerBehavior>
-                    </i:Interaction.Behaviors>
+                    SelectedItem="{Binding SelectedBookmark}"
+                    KeyDown="BookmarkListBox_KeyDown"
+                    DoubleTapped="BookmarkListBox_DoubleTapped">
                     <ListBox.Styles>
                         <Style Selector="ListBoxItem">
                             <Setter Property="Padding" Value="8,4" />
                         </Style>
                     </ListBox.Styles>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate x:DataType="landscape:CameraBookmarkItem">
-                            <DockPanel>
-                                <TextBlock
-                                    DockPanel.Dock="Right"
-                                    FontSize="11"
-                                    Foreground="{DynamicResource SystemBaseMediumColor}"
-                                    Opacity="0.6"
-                                    Text="{Binding Detail}"
-                                    VerticalAlignment="Center" />
-                                <StackPanel Orientation="Horizontal" Spacing="5">
-                                    <TextBlock Text="📍" />
-                                    <TextBlock Text="{Binding Name}" />
-                                </StackPanel>
-                            </DockPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="viewmodels:Bookmark">
+                                <DockPanel ToolTip.Tip="{Binding Location}" Background="Transparent">
+                                    <StackPanel Orientation="Horizontal">
+                                        <!-- Padding fixes odd rendering bug with Spacing -->
+                                        <TextBlock Text="📍" Padding="0,0,7,0" />
+                                        <TextBlock Text="{Binding Name}" />
+                                    </StackPanel>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
                     <ListBox.ContextMenu>
                         <ContextMenu>
                             <MenuItem
@@ -60,11 +53,16 @@
                             <MenuItem
                                 Command="{Binding UpdateBookmarkCommand}"
                                 CommandParameter="{Binding #BookmarkListBox.SelectedItem}"
-                                Header="Update to Current Position" />
+                                Header="Update to Current Location" />
                             <MenuItem
                                 Command="{Binding RenameBookmarkCommand}"
                                 CommandParameter="{Binding #BookmarkListBox.SelectedItem}"
                                 Header="Rename" />
+                            <Separator />
+                            <MenuItem
+                                Command="{Binding CopyLocationCommand}"
+                                CommandParameter="{Binding #BookmarkListBox.SelectedItem}"
+                                Header="Copy Location" />
                             <Separator />
                             <MenuItem
                                 Command="{Binding MoveUpCommand}"
@@ -90,11 +88,20 @@
                 DockPanel.Dock="Top"
                 Orientation="Horizontal"
                 Spacing="5">
+                <StackPanel.Styles>
+                    <Style Selector="Button">
+                        <Setter Property="Width" Value="36" />
+                        <Setter Property="Height" Value="24" />
+                        <Setter Property="Padding" Value="0" />
+                    </Style>
+                </StackPanel.Styles>
                 <Button
                     Command="{Binding AddBookmarkCommand}"
-                    Content="📍"
-                    ToolTip.Tip="Bookmark Current Position (Ctrl+B)" />
+                    Content="+"
+                    FontSize="18"
+                    ToolTip.Tip="Bookmark Current Location (Ctrl+B)" />
                 <Button
+                    x:Name="GoToButton"
                     Command="{Binding GoToBookmarkCommand}"
                     CommandParameter="{Binding SelectedBookmark}"
                     Content="➜"
@@ -103,7 +110,7 @@
                 <Button
                     Command="{Binding DeleteBookmarkCommand}"
                     CommandParameter="{Binding SelectedBookmark}"
-                    Content="🗑️"
+                    Content="x"
                     IsEnabled="{Binding SelectedBookmark, Converter={x:Static ObjectConverters.IsNotNull}}"
                     ToolTip.Tip="Delete Selected Bookmark" />
             </StackPanel>
