@@ -216,8 +216,30 @@ public partial class RenderView : Base3DViewport {
         }
     }
 
+    private DispatcherTimer? _speedFeedbackTimer;
+
     protected override void OnGlPointerWheelChanged(PointerWheelEventArgs e) {
-        _gameScene?.HandlePointerWheelChanged((float)e.Delta.Y);
+        float multiplier = (e.KeyModifiers & KeyModifiers.Shift) != 0 ? 2.0f : 1.0f;
+        
+        _gameScene?.HandlePointerWheelChanged((float)e.Delta.Y * multiplier);
+
+        if (_gameScene?.CurrentCamera is Camera3D cam3d) {
+            ShowSpeedFeedback(cam3d.MoveSpeed);
+        }
+    }
+
+    private void ShowSpeedFeedback(float speed) {
+        SpeedFeedbackText.Text = $"Camera Speed: {speed:F0}";
+        
+        SpeedFeedbackPopup.IsVisible = true;
+
+        _speedFeedbackTimer?.Stop();
+        _speedFeedbackTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
+        _speedFeedbackTimer.Tick += (s, e) => {
+            SpeedFeedbackPopup.IsVisible = false;
+            _speedFeedbackTimer.Stop();
+        };
+        _speedFeedbackTimer.Start();
     }
 
     private bool _isLoading;
