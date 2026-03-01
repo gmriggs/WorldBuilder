@@ -3,7 +3,7 @@ using System.Numerics;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DialogHostAvalonia;
+using HanumanInstitute.MvvmDialogs;
 
 using WorldBuilder.Lib.Settings;
 using WorldBuilder.Services;
@@ -13,6 +13,7 @@ namespace WorldBuilder.Modules.Landscape.ViewModels {
     public partial class BookmarksPanelViewModel : ViewModelBase {
         private readonly LandscapeViewModel _landScapeViewModel;
         private readonly WorldBuilderSettings _settings;
+        private readonly IDialogService _dialogService;
 
         [ObservableProperty]
         private ObservableCollection<CameraBookmarkItem> _bookmarks = new();
@@ -20,9 +21,10 @@ namespace WorldBuilder.Modules.Landscape.ViewModels {
         [ObservableProperty]
         private CameraBookmarkItem? _selectedBookmark;
 
-        public BookmarksPanelViewModel(LandscapeViewModel landScapeViewModel, WorldBuilderSettings settings) {
+        public BookmarksPanelViewModel(LandscapeViewModel landScapeViewModel, WorldBuilderSettings settings, IDialogService dialogService) {
             _landScapeViewModel = landScapeViewModel ?? throw new ArgumentNullException(nameof(landScapeViewModel));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             LoadFromSettings();
         }
 
@@ -146,60 +148,13 @@ namespace WorldBuilder.Modules.Landscape.ViewModels {
         }
 
         private async Task<string?> ShowRenameDialog(string currentName) {
-            string? result = null;
-            var textBox = new Avalonia.Controls.TextBox {
-                Text = currentName,
-                Width = 300,
-                Watermark = "Enter bookmark name"
-            };
+            var vm = new RenameBookmarkDialogViewModel(currentName);
 
-            // Add KeyBindings to the TextBox for Enter and Escape
-            textBox.KeyBindings.AddRange(new[] {
-                new Avalonia.Input.KeyBinding {
-                    Gesture = new Avalonia.Input.KeyGesture(Avalonia.Input.Key.Enter),
-                    Command = new RelayCommand(() => {
-                        result = textBox.Text;
-                        DialogHost.Close("MainDialogHost");
-                    })
-                },
-                new Avalonia.Input.KeyBinding {
-                    Gesture = new Avalonia.Input.KeyGesture(Avalonia.Input.Key.Escape),
-                    Command = new RelayCommand(() => DialogHost.Close("MainDialogHost"))
-                }
-            });
-
-            await DialogHost.Show(new Avalonia.Controls.StackPanel {
-                Margin = new Avalonia.Thickness(20),
-                Spacing = 15,
-                Children = {
-                    new Avalonia.Controls.TextBlock {
-                        Text = "Rename Bookmark",
-                        FontSize = 16,
-                        FontWeight = Avalonia.Media.FontWeight.Bold
-                    },
-                    textBox,
-                    new Avalonia.Controls.StackPanel {
-                        Orientation = Avalonia.Layout.Orientation.Horizontal,
-                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
-                        Spacing = 10,
-                        Children = {
-                            new Avalonia.Controls.Button {
-                                Content = "Cancel",
-                                Command = new RelayCommand(() => DialogHost.Close("MainDialogHost"))
-                            },
-                            new Avalonia.Controls.Button {
-                                Content = "Rename",
-                                Command = new RelayCommand(() => {
-                                    result = textBox.Text;
-                                    DialogHost.Close("MainDialogHost");
-                                })
-                            }
-                        }
-                    }
-                }
-            }, "MainDialogHost");
-
-            return result;
+            var owner = (Avalonia.Application.Current?.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow?.DataContext as System.ComponentModel.INotifyPropertyChanged;
+            if (owner != null) {
+                await _dialogService.ShowDialogAsync(owner, vm);
+            }
+            return vm.DialogResult == true ? vm.BookmarkName : null;
         }
     }
 
